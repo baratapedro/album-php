@@ -2,6 +2,24 @@
 session_start();
 require_once "connection.php";
 
+$sql = "SELECT * FROM images JOIN usuarios ON images.id = usuarios.id";
+$result = mysqli_query($con, $sql);
+
+
+if (isset($_SESSION['email'])) {
+  $sqlUserID = "SELECT id, email FROM usuarios WHERE email = '{$_SESSION['email']}'";
+  $resultUserID = mysqli_query($con, $sqlUserID);
+  if (mysqli_num_rows($resultUserID) > 0) {
+    while ($row = mysqli_fetch_assoc($resultUserID)) {
+      $userID = $row['id'];
+      $userEmail = $row['email'];
+    }
+  }
+}
+
+$qry="SELECT usuarios.email FROM usuarios INNER JOIN images WHERE usuarios.id = images.id";
+$resultt = mysqli_query($con, $qry);
+
 ?>
 
 <!doctype html>
@@ -77,6 +95,37 @@ require_once "connection.php";
       flex-direction: column;
       gap: 2rem;
     }
+
+    .image {
+      width: 25rem;
+      height: 25rem;
+    }
+
+    .col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+    }
+
+    .cardDisplay {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2rem;
+      width: 100vw;
+    }
+
+    .btn-group {
+      margin-bottom: 4rem;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 25rem;
+    }
   </style>
 
 
@@ -143,13 +192,21 @@ require_once "connection.php";
           }
           unset($_SESSION['message']);
 
+          if (isset($_SESSION['email'])) {
+            echo "
+            <h1 class='fw-light'>Fazer upload de imagens</h1>
+            <form action='upload.php' method='POST' enctype='multipart/form-data' class='form'>
+              <input type='file' name='arquivo' />
+              <textarea name='description' cols='30' rows='5' placeholder='Digite a descrição'></textarea>
+              <button type='submit' name='send_button'>Enviar</button>
+            </form>
+            ";
+          } else {
+            echo "<h1>Faça login para enviar suas fotos!</h1>";
+          }
+
           ?>
-          <h1 class="fw-light">Fazer upload de imagens</h1>
-          <form action="upload.php" method="POST" enctype="multipart/form-data" class='form'>
-            <input type="file" name="arquivo" />
-            <textarea name="description" cols="30" rows="5" placeholder="Digite a descrição"></textarea>
-            <button type="submit" name="send_button">Enviar</button>
-          </form>
+         
         </div>
       </div>
     </section>
@@ -159,37 +216,54 @@ require_once "connection.php";
 
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
           <div class="col">
-            <div class="card shadow-sm">
+            <div class='cardDisplay'>
+
               <?php
-              if (isset($_SESSION['path'])) { ?>
-                <img src="<?php echo "{$_SESSION['path']}";  ?>" alt="">
-              <?php
+              if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                  $image_path = $row["image_path"];
+                  $description = $row['descricao'];
+                  $image_id = $row['id'];
+                  $userSendPictureEmail = $row["email"];
+                  echo "<div class='card'><img src='$image_path' alt='Imagem' class='image'/>
+                  <p class='p'>$description <br></p>
+                  <p>Enviado por : $userSendPictureEmail</p>
+                  <div class='d-flex justify-content-between align-items-center btDiv'>";
+                  if (isset($_SESSION['email'])) {
+                    if ($image_id == $userID) {
+                      echo "
+                      <div class='btn-group'>
+                        <button type='button' class='btn btn-sm btn-outline-secondary'>Edit</button>
+                      </div>
+                   </div>
+                      </div>";
+                    } else {
+                      echo "<div class='btn-group'></div>
+                      </div>
+                      </div>";
+                    }
+                  } else {
+                    echo "<div class='btn-group'></div>
+                    </div>
+                    </div>";
+                  }
+                }
+              } else {
+                echo "0 results";
               }
+
+              // if (mysqli_num_rows($resultt) > 0) {
+              //   while ($row = mysqli_fetch_assoc($resultt)) {
+              //     $a = $row["email"];
+              //     echo "$a";
+              //   }
+              // }
               ?>
-              <div class="card-body">
-                <p class="card-text">
-                <?php
-              if (isset($_SESSION['description'])) { 
-                 echo "{$_SESSION['description']}";
-              
-              }
-              ?>
-                </p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-                  </div>
-                  <small class="text-muted">9 mins</small>
-                </div>
-              </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-
   </main>
 
   <footer class="text-muted py-5">
