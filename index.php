@@ -97,8 +97,8 @@ $resultt = mysqli_query($con, $qry);
     }
 
     .image {
-      width: 25rem;
-      height: 25rem;
+      width: 20rem;
+      height: 20rem;
     }
 
     .col {
@@ -124,7 +124,8 @@ $resultt = mysqli_query($con, $qry);
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 25rem;
+      gap: 2rem;
+      width: 20rem;
     }
   </style>
 
@@ -233,7 +234,12 @@ $resultt = mysqli_query($con, $qry);
                     if ($image_id == $userID) {
                       echo "
                       <div class='btn-group'>
-                        <button type='button' class='btn btn-sm btn-outline-secondary'>Edit</button>
+                      <form action='delete.php' method='POST'>
+                      <label>
+                      <input type='text' name='path_name' value='$image_path' hidden/>
+                      </label>
+                      <button type='submit' name='bt-delete' class='btn btn-sm btn-outline-secondary'>Delete</button>
+                      </form>                       
                       </div>
                    </div>
                       </div>";
